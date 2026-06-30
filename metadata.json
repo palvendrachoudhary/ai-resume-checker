@@ -1,0 +1,6 @@
+{
+  "name": "AI Resume Checker",
+  "description": "Upload your resume for an AI-powered ATS parse and content quality check with 27 crucial checks.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

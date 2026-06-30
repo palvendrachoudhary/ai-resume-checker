@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+html {
+  scroll-behavior: smooth;
+  transition: filter 0.3s ease;
+}
+
+html.dark {
+  filter: invert(1) hue-rotate(180deg);
+  background-color: #111;
+}
+
+html.dark img,
+html.dark video,
+html.dark [data-no-invert] {
+  filter: invert(1) hue-rotate(180deg);
+}

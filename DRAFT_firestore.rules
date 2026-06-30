@@ -1,0 +1,36 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isSignedIn() { return request.auth != null; }
+
+    function isValidEvaluation(data) {
+      return data.keys().hasAll(['userId', 'timestamp', 'jobTitle', 'jobDescription', 'results']) &&
+             data.keys().size() == 5 &&
+             data.userId is string && data.userId == request.auth.uid &&
+             data.timestamp is number && data.timestamp == request.time.toMillis() &&
+             data.jobTitle is string && data.jobTitle.size() <= 200 &&
+             data.jobDescription is string && data.jobDescription.size() <= 10000 &&
+             data.results is string && data.results.size() <= 20000;
+    }
+
+    match /users/{userId} {
+      // Just in case we need user doc, but right now we only need subcollections.
+      allow read, write: if false;
+
+      match /evaluations/{evaluationId} {
+        allow read: if isSignedIn() && userId == request.auth.uid;
+        allow create: if isSignedIn() && userId == request.auth.uid && isValidId(evaluationId) && isValidEvaluation(incoming());
+        allow update: if isSignedIn() && userId == request.auth.uid && isValidId(evaluationId) && isValidEvaluation(incoming()) && incoming().userId == existing().userId && incoming().timestamp == existing().timestamp;
+        allow delete: if isSignedIn() && userId == request.auth.uid && isValidId(evaluationId);
+        allow list: if isSignedIn() && userId == request.auth.uid && resource.data.userId == request.auth.uid;
+      }
+    }
+  }
+}

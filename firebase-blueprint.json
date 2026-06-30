@@ -1,0 +1,37 @@
+{
+  "entities": {
+    "Evaluation": {
+      "title": "Evaluation",
+      "description": "A saved job evaluation session, including the job title, description, and the candidates evaluated.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The UID of the user who performed the evaluation."
+        },
+        "timestamp": {
+          "type": "number"
+        },
+        "jobTitle": {
+          "type": "string"
+        },
+        "jobDescription": {
+          "type": "string"
+        },
+        "results": {
+          "type": "string",
+          "description": "A JSON string representation of the results array (to bypass nested validation issues, or we can use array if simple, but it is complex nested object)."
+        }
+      },
+      "required": ["userId", "timestamp", "jobTitle", "jobDescription", "results"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/evaluations/{evaluationId}": {
+      "schema": {
+        "$ref": "#/entities/Evaluation"
+      },
+      "description": "Evaluations belonging to a specific user."
+    }
+  }
+}
