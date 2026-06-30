@@ -1,10 +1,10 @@
 {
-  "projectId": "credible-ember-j6tp2",
-  "appId": "1:109839337262:web:fff3c3f8c993a95256dcbf",
-  "apiKey": "AIzaSyCn476FULhMZOP9QYdJAqgA2kcGRNd7mZQ",
-  "authDomain": "credible-ember-j6tp2.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-smartairecruiter-d6a56525-911b-4f14-b9ef-b88d86a5582e",
-  "storageBucket": "credible-ember-j6tp2.firebasestorage.app",
-  "messagingSenderId": "109839337262",
-  "measurementId": ""
+  "projectId": "ai-resume-checker-91982",
+  "appId": "1:709607935624:web:3c2e24c854cae13dd2d93d",
+  "apiKey": "AIzaSyCsrcAJBrq86N97PH88yN0GBllUpphyqbk",
+  "authDomain": "ai-resume-checker-91982.firebaseapp.com",
+  "firestoreDatabaseId": "(default)",
+  "storageBucket": "ai-resume-checker-91982.firebasestorage.app",
+  "messagingSenderId": "709607935624",
+  "measurementId": "G-2DT7KNJ21J"
 }
