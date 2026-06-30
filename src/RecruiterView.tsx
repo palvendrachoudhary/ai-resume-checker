@@ -43,10 +43,12 @@ import { collection, query, getDocs, setDoc, doc, deleteDoc, orderBy, limit } fr
 
 interface RecruiterViewProps {
   onNavigateHome?: () => void;
+  onSignOut?: () => void;
 }
 
 export default function RecruiterView({
   onNavigateHome,
+  onSignOut,
 }: RecruiterViewProps = {}) {
   const [candidates, setCandidates] = useState<any[]>([]);
   const [jobTitle, setJobTitle] = useState("");
@@ -829,7 +831,7 @@ export default function RecruiterView({
                       Billing
                     </button>
                     <button 
-                      onClick={onNavigateHome}
+                      onClick={onSignOut}
                       className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors font-medium mt-1"
                     >
                       Sign Out
