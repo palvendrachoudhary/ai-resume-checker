@@ -225,21 +225,9 @@ export default function LandingPage({ onLaunch }: LandingPageProps) {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white font-sans overflow-x-hidden relative selection:bg-[#00f2fe] selection:text-gray-900">
-      {/* Background Video Layer */}
-      <div className="fixed inset-0 z-0">
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="absolute min-w-full min-h-full object-cover"
-        >
-          <source
-            src="https://cdn.pixabay.com/video/2021/08/04/83866-584732598_large.mp4"
-            type="video/mp4"
-          />
-        </video>
-        <div className="absolute inset-0 bg-gray-950/80 backdrop-blur-[6px]"></div>
+      {/* Background Layer */}
+      <div className="fixed inset-0 z-0 bg-gradient-to-br from-gray-950 via-gray-900 to-black">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#00f2fe]/10 via-transparent to-transparent"></div>
       </div>
 
       {/* Fake-3D Particle Canvas */}
@@ -405,10 +393,11 @@ export default function LandingPage({ onLaunch }: LandingPageProps) {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: (idx % 10) * 0.05 }}
-                className="flex items-center gap-3 bg-gray-900/40 border border-white/5 p-4 rounded-xl hover:bg-gray-800 hover:border-[#00f2fe]/40 transition-colors"
+                onClick={onLaunch}
+                className="flex items-center gap-3 bg-gray-900/40 border border-white/5 p-4 rounded-xl hover:bg-gray-800 hover:border-[#00f2fe]/40 transition-colors cursor-pointer group"
               >
-                <CheckCircle2 className="w-4 h-4 text-[#00f2fe] shrink-0" />
-                <span className="text-sm text-gray-300 font-medium">
+                <CheckCircle2 className="w-4 h-4 text-[#00f2fe] shrink-0 group-hover:scale-110 transition-transform" />
+                <span className="text-sm text-gray-300 font-medium group-hover:text-white transition-colors">
                   {feature}
                 </span>
               </motion.div>
