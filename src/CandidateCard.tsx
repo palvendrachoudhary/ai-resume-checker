@@ -151,6 +151,20 @@ export default function CandidateCard({
             <p className="text-sm text-gray-600 mb-2 line-clamp-1">
               {experienceSummary}
             </p>
+            
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              {candidate?.expected_salary && candidate.expected_salary !== "Not Specified" && (
+                <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded border border-green-200 bg-green-50 text-green-700 flex items-center gap-1">
+                  <Banknote className="w-3 h-3" /> {candidate.expected_salary}
+                </span>
+              )}
+              {candidate?.work_availability && candidate.work_availability !== "Not Specified" && (
+                <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded border border-purple-200 bg-purple-50 text-purple-700 flex items-center gap-1">
+                  <PlayCircle className="w-3 h-3" /> {candidate.work_availability}
+                </span>
+              )}
+            </div>
+
             {skillsList.length > 0 && (
               <div className="flex flex-wrap items-center gap-1.5 mb-2">
                 <span className="text-xs font-semibold text-gray-700 mr-1">

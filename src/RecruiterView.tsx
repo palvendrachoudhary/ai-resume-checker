@@ -469,12 +469,6 @@ export default function RecruiterView({
 
       setCandidates((prev) => {
         const updated = [...prev, ...newCandidates];
-        // Trigger auto evaluation if we have a job defined
-        if (jobTitle && jobDescription) {
-          setTimeout(() => {
-            handleEvaluate();
-          }, 0);
-        }
         return updated;
       });
     } catch (err) {
@@ -890,39 +884,44 @@ export default function RecruiterView({
             </div>
 
             <div
-              onClick={() => fileInputRef.current?.click()}
+              onClick={() => !isUploading && fileInputRef.current?.click()}
               onDragOver={(e) => e.preventDefault()}
               onDrop={(e) => {
                 e.preventDefault();
-                if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                if (!isUploading && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
                   processFiles(Array.from(e.dataTransfer.files));
                 }
               }}
-              className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center bg-gray-50 hover:bg-gray-100 hover:border-blue-300 transition-colors cursor-pointer"
+              className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer ${isUploading ? 'border-blue-500 bg-blue-50 cursor-wait' : 'border-gray-300 bg-gray-50 hover:bg-gray-100 hover:border-blue-300'}`}
             >
-              <Upload className="w-6 h-6 text-blue-500 mx-auto mb-2" />
-              <p className="font-bold text-gray-700 text-sm">
-                Upload Candidates
-              </p>
-              <p className="text-xs text-gray-500 mt-1">
-                PDF, DOCX, or CSV (Multiple allowed)
-              </p>
+              {isUploading ? (
+                <>
+                  <RefreshCw className="w-8 h-8 text-blue-500 mx-auto mb-2 animate-spin" />
+                  <p className="font-bold text-blue-700 text-sm animate-pulse">
+                    Parsing Resumes with AI...
+                  </p>
+                  <p className="text-xs text-blue-500 mt-1">Please wait</p>
+                </>
+              ) : (
+                <>
+                  <Upload className="w-8 h-8 text-blue-500 mx-auto mb-2" />
+                  <p className="font-bold text-gray-700 text-sm">
+                    Upload Candidates
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    PDF, DOCX, CSV, PNG, JPG (Multiple allowed)
+                  </p>
+                </>
+              )}
             </div>
             <input
               type="file"
               multiple
               ref={fileInputRef}
               className="hidden"
-              accept=".pdf,.docx,.csv"
+              accept=".pdf,.docx,.csv,image/png,image/jpeg,image/jpg"
               onChange={handleUpload}
             />
-
-            {isUploading && (
-              <div className="mt-4 flex items-center gap-2 text-sm text-blue-600 font-bold justify-center">
-                <RefreshCw className="w-4 h-4 animate-spin" /> Uploading &
-                Parsing...
-              </div>
-            )}
 
             {!isUploading && candidates.length > 0 && (
               <div className="mt-4">
@@ -961,6 +960,26 @@ export default function RecruiterView({
               Job Requisition
             </h2>
             <div className="space-y-4">
+              {/* Preset Roles */}
+              <div className="flex flex-wrap gap-2 mb-2">
+                {[
+                  { title: "Senior Frontend Engineer", desc: "React, TypeScript, 5+ years experience, UI/UX focus." },
+                  { title: "Backend Engineer", desc: "Node.js, Express, PostgreSQL, AWS, API design." },
+                  { title: "Data Scientist", desc: "Python, Machine Learning, SQL, Data visualization." },
+                  { title: "Product Manager", desc: "Agile, roadmap planning, stakeholder management, analytics." }
+                ].map((preset, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setJobTitle(preset.title);
+                      setJobDescription(preset.desc);
+                    }}
+                    className="text-[10px] uppercase font-bold px-2 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-md transition-colors border border-blue-100"
+                  >
+                    {preset.title}
+                  </button>
+                ))}
+              </div>
               <div>
                 <label className="block text-xs font-bold text-gray-700 mb-1">
                   Job Title

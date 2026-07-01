@@ -45,23 +45,31 @@ async function startServer() {
         const source = req.body.source || "Direct Application";
         const uid = req.body.uid || "anonymous";
 
-        const processTextToProfile = async (rawText: string) => {
+        const processTextToProfile = async (rawText: string, imagePart?: any) => {
           const prompt = `
-          Extract the following information from the resume text provided below.
+          Extract the following information from the resume provided.
           Format the output as JSON with the following keys:
           - name (string)
           - contact_info (string)
           - skills (array of strings)
           - experience_summary (string)
           - education (string)
+          - expected_salary (string) - Estimate or extract expected salary, e.g., "$100k-$120k", or "Not Specified" if not found.
+          - work_availability (string) - Extract availability (e.g., "Full-time", "Contract", "40 hours/week") or "Not Specified".
           
-          Resume Text:
+          Resume Text (if provided):
           ${rawText}
         `;
 
+          const contents: any[] = [];
+          if (imagePart) {
+            contents.push(imagePart);
+          }
+          contents.push(prompt);
+
           const response = await ai.models.generateContent({
             model: "gemini-2.5-flash",
-            contents: prompt,
+            contents: contents,
             config: {
               responseMimeType: "application/json",
               temperature: 0.1,
@@ -69,7 +77,7 @@ async function startServer() {
           });
 
           const profile = JSON.parse(response.text || "{}");
-          profile.raw_text = rawText;
+          profile.raw_text = rawText || "Extracted from Image";
           profile.source = source;
           profile.uid = uid;
           return profile;
@@ -84,14 +92,10 @@ async function startServer() {
           });
 
           const profiles = [];
-          // Map CSV rows to profiles (assuming columns like Name, Skills, Experience, etc.)
           for (const record of records) {
-            // Construct a rawText equivalent from the CSV row
             const rawText = Object.entries(record)
               .map(([k, v]) => `${k}: ${v}`)
               .join("\n");
-            // Extract profile using Gemini, or just map fields if we assume standard columns.
-            // Since CSV format is unknown, Gemini extraction is robust.
             const profile = await processTextToProfile(rawText);
             const candidateId = crypto.randomUUID();
             candidates_db.set(candidateId, profile);
@@ -104,16 +108,28 @@ async function startServer() {
           });
         }
 
-        let rawText = "";
+        let profile;
+        const mimetype = req.file.mimetype;
 
-        if (req.file.originalname.toLowerCase().endsWith(".pdf")) {
-          const data = await pdf(req.file.buffer);
-          rawText = data.text;
+        if (mimetype.startsWith("image/")) {
+          // Process as image
+          const imagePart = {
+            inlineData: {
+              data: req.file.buffer.toString("base64"),
+              mimeType: mimetype,
+            },
+          };
+          profile = await processTextToProfile("", imagePart);
         } else {
-          rawText = req.file.buffer.toString("utf-8");
+          let rawText = "";
+          if (req.file.originalname.toLowerCase().endsWith(".pdf")) {
+            const data = await pdf(req.file.buffer);
+            rawText = data.text;
+          } else {
+            rawText = req.file.buffer.toString("utf-8");
+          }
+          profile = await processTextToProfile(rawText);
         }
-
-        const profile = await processTextToProfile(rawText);
 
         const candidateId = crypto.randomUUID();
         candidates_db.set(candidateId, profile);

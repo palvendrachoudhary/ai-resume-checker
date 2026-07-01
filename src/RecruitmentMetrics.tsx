@@ -104,7 +104,7 @@ export default function RecruitmentMetrics({
           Run evaluation to see analytics.
         </div>
       ) : (
-        <div className="grid lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           {/* Resume Quality Score */}
           <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-100 flex flex-col">
             <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-2">
