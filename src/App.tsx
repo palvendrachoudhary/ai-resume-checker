@@ -6,9 +6,7 @@ import { auth } from "./firebase";
 import { User, onAuthStateChanged, signOut } from "firebase/auth";
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<"landing" | "dashboard">(
-    "landing",
-  );
+  const [currentPage, setCurrentPage] = useState<"landing" | "dashboard">("landing");
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -22,15 +20,27 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (currentPage === "landing" || !user) {
+    if (currentPage === "landing") {
+      // Landing page is natively dark, so remove the invert filter
       document.documentElement.classList.remove("dark");
+    } else {
+      // Login and Dashboard respect user theme
+      if (
+        localStorage.theme === "dark" ||
+        (!("theme" in localStorage) &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches)
+      ) {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
     }
-  }, [currentPage, user]);
+  }, [currentPage]);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-[#00f2fe] border-t-transparent rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }

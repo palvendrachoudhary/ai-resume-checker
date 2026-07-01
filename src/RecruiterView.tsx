@@ -37,6 +37,7 @@ import KanbanBoard from "./KanbanBoard";
 import CandidateSkeleton from "./CandidateSkeleton";
 import TemplateSettings from "./TemplateSettings";
 import BulkPipelineUpdate from "./BulkPipelineUpdate";
+import ProfileSettings from "./ProfileSettings";
 
 import { auth, db } from "./firebase";
 import { collection, query, getDocs, setDoc, doc, deleteDoc, orderBy, limit } from "firebase/firestore";
@@ -67,6 +68,7 @@ export default function RecruiterView({
   const [showHistoryCompare, setShowHistoryCompare] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showProfileSettings, setShowProfileSettings] = useState(false);
   const [aiAutoPilot, setAiAutoPilot] = useState(false);
   const [isBlindMode, setIsBlindMode] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -824,7 +826,13 @@ export default function RecruiterView({
                     </p>
                   </div>
                   <div className="p-2">
-                    <button className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors font-medium">
+                    <button 
+                      onClick={() => {
+                        setShowProfileSettings(true);
+                        setShowProfileMenu(false);
+                      }}
+                      className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors font-medium"
+                    >
                       Profile Settings
                     </button>
                     <button className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors font-medium">
@@ -1358,6 +1366,11 @@ export default function RecruiterView({
       <GapAnalysisModal
         isOpen={showGapAnalysisModal}
         onClose={() => setShowGapAnalysisModal(false)}
+      />
+      <ProfileSettings 
+        isOpen={showProfileSettings} 
+        onClose={() => setShowProfileSettings(false)} 
+        userEmail={auth.currentUser?.email}
       />
     </div>
   );

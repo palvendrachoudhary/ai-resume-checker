@@ -32,5 +32,8 @@ pip-delete-this-directory.txt
 .vscode/
 *.swp
 
+# Firebase
+firebase-applet-config.json
+
 # Docker
 .docker/

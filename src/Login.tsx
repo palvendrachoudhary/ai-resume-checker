@@ -14,31 +14,41 @@ export default function Login({ onBack }: { onBack: () => void }) {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
     } catch (err: any) {
-      setError(err.message || "An unexpected error occurred during Google Sign In");
+      if (err.message?.includes("popup") || err.code?.includes("popup") || window !== window.top) {
+        setError("Login popup was blocked. Please click the 'Open in new tab' button at the top right of the preview window to login.");
+      } else {
+        setError(err.message || "An unexpected error occurred during Google Sign In");
+      }
     }
     setLoading(false);
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 flex flex-col items-center justify-center p-4 selection:bg-[#00f2fe] selection:text-gray-900">
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
       <button
         onClick={onBack}
-        className="absolute top-8 left-8 text-gray-400 hover:text-white transition-colors"
+        className="absolute top-8 left-8 text-gray-500 hover:text-gray-900 transition-colors font-medium"
       >
         &larr; Back to Home
       </button>
 
-      <div className="w-full max-w-md bg-gray-900/50 p-8 rounded-3xl border border-white/10 backdrop-blur-sm">
+      <div className="w-full max-w-md bg-white p-8 rounded-3xl border border-gray-200 shadow-xl shadow-gray-200/40">
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-white mb-2 tracking-tight">
+          <h2 className="text-3xl font-bold text-gray-900 mb-2 tracking-tight">
             Recruiter Login
           </h2>
-          <p className="text-gray-400">Sign in to access your dashboard</p>
+          <p className="text-gray-500">Sign in to access your dashboard</p>
         </div>
+
+        {window !== window.top && (
+          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-xl text-sm text-yellow-800">
+            <strong>Note:</strong> You are viewing this in a preview window. If the login popup doesn't open, please click the <strong>Open in new tab</strong> button (↗) at the top right.
+          </div>
+        )}
 
         <div className="space-y-6">
           {error && (
-            <div className="text-sm text-red-400 bg-red-400/10 p-3 rounded-lg border border-red-400/20">
+            <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-100">
               {error}
             </div>
           )}
@@ -48,10 +58,10 @@ export default function Login({ onBack }: { onBack: () => void }) {
               type="button"
               onClick={handleGoogleLogin}
               disabled={loading}
-              className="w-full py-3 bg-white text-gray-950 font-bold rounded-xl hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
+              className="w-full py-3 bg-white border border-gray-200 shadow-sm text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
             >
               {loading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
+                <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
               ) : (
                 <>
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
