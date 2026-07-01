@@ -435,12 +435,11 @@ export default function RecruiterView({
     URL.revokeObjectURL(url);
   };
 
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files?.length) return;
+  const processFiles = async (files: File[]) => {
+    if (!files.length) return;
 
     setIsUploading(true);
     try {
-      const files = Array.from(e.target.files) as File[];
       let newCandidates: any[] = [];
 
       for (const file of files) {
@@ -461,6 +460,10 @@ export default function RecruiterView({
           } else if (data.profile) {
             newCandidates.push(data.profile);
           }
+        } else {
+          const text = await res.text();
+          console.error("Upload failed", text);
+          alert("Upload failed: " + text);
         }
       }
 
@@ -480,6 +483,12 @@ export default function RecruiterView({
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      processFiles(Array.from(e.target.files));
     }
   };
 
@@ -882,6 +891,13 @@ export default function RecruiterView({
 
             <div
               onClick={() => fileInputRef.current?.click()}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                e.preventDefault();
+                if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                  processFiles(Array.from(e.dataTransfer.files));
+                }
+              }}
               className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center bg-gray-50 hover:bg-gray-100 hover:border-blue-300 transition-colors cursor-pointer"
             >
               <Upload className="w-6 h-6 text-blue-500 mx-auto mb-2" />
