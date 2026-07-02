@@ -17,7 +17,6 @@ RUN npm run build
 # Expose port
 EXPOSE 8000
 
-# Set PORT environment variable and start the server
-ENV PORT=8000
-CMD ["npm", "start"]
+# Start the server with PORT set to 8000
+CMD ["sh", "-c", "PORT=8000 NODE_ENV=production node dist/server.mjs"]
 
