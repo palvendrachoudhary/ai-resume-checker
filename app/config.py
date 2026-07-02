@@ -3,11 +3,11 @@ from pydantic import Field
 
 class Settings(BaseSettings):
     # Google Gemini AI Studio
-    gemini_api_key: str = Field(..., description="API Key for Google Gemini")
+    gemini_api_key: str = Field(default="", description="API Key for Google Gemini")
 
     # Supabase configuration
-    supabase_url: str = Field(..., description="Supabase project URL")
-    supabase_key: str = Field(..., description="Supabase anonymous or service role key")
+    supabase_url: str = Field(default="", description="Supabase project URL")
+    supabase_key: str = Field(default="", description="Supabase anonymous or service role key")
 
     # Optional local databases (MongoDB & ChromaDB)
     mongo_uri: str | None = None
@@ -21,10 +21,13 @@ class Settings(BaseSettings):
     )
 
 try:
-    # Instantiating the settings will automatically validate the presence of required variables.
-    # It throws a ValidationError if a required key (like gemini_api_key) is missing.
     settings = Settings()
+    if not settings.gemini_api_key:
+        print("⚠️  Warning: GEMINI_API_KEY is not set. AI features will not work.")
+    if not settings.supabase_url:
+        print("⚠️  Warning: SUPABASE_URL is not set. Database features will not work.")
 except Exception as e:
     import sys
     print(f"❌ Configuration Error: Missing or invalid environment variables.\nDetails: {e}")
     sys.exit(1)
+
