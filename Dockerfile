@@ -17,6 +17,7 @@ RUN npm run build
 # Expose port
 EXPOSE 8000
 
-# Start the server
+# Set PORT environment variable and start the server
+ENV PORT=8000
 CMD ["npm", "start"]
 
