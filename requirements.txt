@@ -12,3 +12,5 @@ supabase
 matplotlib
 seaborn
 pandas
+python-multipart
+
