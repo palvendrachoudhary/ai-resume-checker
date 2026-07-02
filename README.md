@@ -1,4 +1,4 @@
-# Redrob Hackathon: Team Antigravity
+# Redrob Hackathon: Team sinner
 
 This is the official submission for the Intelligent Candidate Discovery & Ranking Challenge.
 
