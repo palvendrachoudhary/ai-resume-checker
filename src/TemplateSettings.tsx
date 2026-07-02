@@ -27,7 +27,10 @@ export default function TemplateSettings({ onClose }: TemplateSettingsProps) {
 
   useEffect(() => {
     fetch("/api/v1/templates")
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error("Server error");
+        return res.json();
+      })
       .then(data => {
         const tempMap: any = {};
         if (Array.isArray(data)) {
@@ -82,8 +85,8 @@ export default function TemplateSettings({ onClose }: TemplateSettingsProps) {
         })
       });
       
-      const data = await res.json();
       if (res.ok) {
+        const data = await res.json();
         setTemplates({
           ...templates,
           [activeTab]: data.template
@@ -111,7 +114,7 @@ export default function TemplateSettings({ onClose }: TemplateSettingsProps) {
             <Settings className="w-5 h-5 text-gray-700" />
             <h2 className="text-xl font-bold text-gray-900">Email Templates</h2>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
+          <button onClick={onClose} className="p-2 hover:bg-gray-200 rounded-full transition-colors flex items-center justify-center overflow-hidden">
             <X className="w-5 h-5 text-gray-500" />
           </button>
         </div>

@@ -34,7 +34,7 @@ export default function ProfileSettings({ isOpen, onClose, userEmail }: ProfileS
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors"
+            className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors flex items-center justify-center overflow-hidden"
           >
             <X className="w-5 h-5" />
           </button>

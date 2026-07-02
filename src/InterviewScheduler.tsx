@@ -15,7 +15,10 @@ export default function InterviewScheduler({ candidateId }: InterviewSchedulerPr
   useEffect(() => {
     if (candidateId) {
       fetch(`/api/v1/interviews/${candidateId}`)
-        .then(r => r.json())
+        .then(r => {
+          if (!r.ok) throw new Error("Server error");
+          return r.json();
+        })
         .then(data => {
           if (Array.isArray(data)) setInterviews(data);
         })
@@ -42,8 +45,8 @@ export default function InterviewScheduler({ candidateId }: InterviewSchedulerPr
         })
       });
       
-      const data = await res.json();
       if (res.ok) {
+        const data = await res.json();
         setSuccessMsg("Interview scheduled! Email notification triggered.");
         setInterviews([...interviews, data.interview]);
         setDate("");

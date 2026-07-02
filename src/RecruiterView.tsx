@@ -45,17 +45,22 @@ import { collection, query, getDocs, setDoc, doc, deleteDoc, orderBy, limit } fr
 interface RecruiterViewProps {
   onNavigateHome?: () => void;
   onSignOut?: () => void;
+  isGuest?: boolean;
+  onRequireLogin?: () => void;
 }
 
 export default function RecruiterView({
   onNavigateHome,
   onSignOut,
+  isGuest,
+  onRequireLogin,
 }: RecruiterViewProps = {}) {
   const [candidates, setCandidates] = useState<any[]>([]);
   const [jobTitle, setJobTitle] = useState("");
   const [jobDescription, setJobDescription] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [isEvaluating, setIsEvaluating] = useState(false);
+  const [guestActionsCount, setGuestActionsCount] = useState(0);
   const [results, setResults] = useState<any[]>([]);
   const [selectedCandidate, setSelectedCandidate] = useState<any | null>(null);
   const [checkedCandidates, setCheckedCandidates] = useState<any[]>([]);
@@ -197,6 +202,9 @@ export default function RecruiterView({
           cancelUrl: window.location.origin + "?canceled=true",
         })
       });
+      if (!res.ok) {
+        throw new Error("Server error");
+      }
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
@@ -435,8 +443,20 @@ export default function RecruiterView({
     URL.revokeObjectURL(url);
   };
 
+  const checkGuestLimit = () => {
+    if (isGuest) {
+      if (guestActionsCount >= 2) {
+        if (onRequireLogin) onRequireLogin();
+        return false;
+      }
+      setGuestActionsCount(prev => prev + 1);
+    }
+    return true;
+  };
+
   const processFiles = async (files: File[]) => {
     if (!files.length) return;
+    if (!checkGuestLimit()) return;
 
     setIsUploading(true);
     try {
@@ -491,6 +511,7 @@ export default function RecruiterView({
       alert("Please provide a job title and description");
       return;
     }
+    if (!checkGuestLimit()) return;
 
     setIsEvaluating(true);
     setResults([]);
@@ -618,6 +639,7 @@ export default function RecruiterView({
       alert("Please provide both job title and description first.");
       return;
     }
+    if (!checkGuestLimit()) return;
     setIsFetchingInsights(true);
     try {
       const res = await fetch("/api/v1/jobs/insights", {
@@ -657,6 +679,11 @@ export default function RecruiterView({
               </div>
               AI Resume Checker
             </div>
+            {isGuest && (
+              <span className="ml-4 px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-bold uppercase rounded-md border border-yellow-200 hidden md:block">
+                Guest Mode ({2 - guestActionsCount} uses left)
+              </span>
+            )}
           </div>
           <div>
             <div className="flex items-center gap-2 relative">
@@ -670,7 +697,7 @@ export default function RecruiterView({
 
               <button
                 onClick={toggleTheme}
-                className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors relative print:hidden"
+                className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors relative print:hidden flex items-center justify-center overflow-hidden"
                 title={
                   isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"
                 }
@@ -791,7 +818,7 @@ export default function RecruiterView({
               <button
                 onClick={handleCheckout}
                 disabled={isCheckoutLoading}
-                className="hidden md:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-sm font-medium rounded-lg shadow-sm transition-all disabled:opacity-50"
+                className="hidden md:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-sm font-medium rounded-lg shadow-sm transition-all disabled:opacity-50 flex justify-center overflow-hidden"
               >
                 {isCheckoutLoading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -906,7 +933,7 @@ export default function RecruiterView({
                 <>
                   <Upload className="w-8 h-8 text-blue-500 mx-auto mb-2" />
                   <p className="font-bold text-gray-700 text-sm">
-                    Upload Candidates
+                    {candidates.length > 0 ? "Upload more candidates" : "Upload Candidates"}
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
                     PDF, DOCX, CSV, PNG, JPG (Multiple allowed)
@@ -934,14 +961,21 @@ export default function RecruiterView({
                       key={i}
                       className="flex items-center justify-between gap-2 text-sm p-2 bg-gray-50 rounded-lg border border-gray-100"
                     >
-                      <div className="flex items-center gap-2">
-                        <FileText className="w-4 h-4 text-blue-500 shrink-0" />
-                        <span className="font-bold text-gray-700 truncate">
-                          {c.name || "Unknown Candidate"}
-                        </span>
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <FileText className="w-4 h-4 text-blue-500 shrink-0" />
+                          <span className="font-bold text-gray-700 truncate">
+                            {c.name && c.name !== "Unknown Candidate" && c.name !== "{}" && c.name !== "" ? c.name : "Unknown Candidate"}
+                          </span>
+                        </div>
+                        {c.original_filename && (
+                          <span className="text-xs text-gray-500 truncate ml-6">
+                            {c.original_filename}
+                          </span>
+                        )}
                       </div>
                       {c.source && (
-                        <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-gray-200 text-gray-600 shrink-0">
+                        <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-gray-200 text-gray-600 shrink-0 ml-2">
                           {c.source}
                         </span>
                       )}
@@ -1078,7 +1112,7 @@ export default function RecruiterView({
                   isEvaluating
                 }
                 onClick={handleEvaluate}
-                className="w-full py-3 bg-gray-900 text-white rounded-xl font-bold hover:bg-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-colors disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm overflow-hidden"
               >
                 {isEvaluating ? (
                   <>

@@ -141,7 +141,7 @@ export default function GapAnalysisModal({
             )}
             <button
               onClick={onClose}
-              className="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-500 transition-colors print:hidden"
+              className="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-500 transition-colors print:hidden overflow-hidden"
             >
               <X className="w-5 h-5" />
             </button>

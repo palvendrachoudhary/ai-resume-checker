@@ -3,7 +3,7 @@ import { auth } from "./firebase";
 import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { Loader2 } from "lucide-react";
 
-export default function Login({ onBack }: { onBack: () => void }) {
+export default function Login({ onBack, onGuestLogin }: { onBack: () => void; onGuestLogin?: () => void }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -86,6 +86,15 @@ export default function Login({ onBack }: { onBack: () => void }) {
                 </>
               )}
             </button>
+            {onGuestLogin && (
+              <button
+                type="button"
+                onClick={onGuestLogin}
+                className="w-full py-3 bg-transparent text-gray-500 font-medium rounded-xl hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
+              >
+                Skip for now (Guest Mode)
+              </button>
+            )}
           </div>
         </div>
       </div>

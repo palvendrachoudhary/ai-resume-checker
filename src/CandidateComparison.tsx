@@ -15,7 +15,7 @@ export default function CandidateComparison({ candidates, onClose }: CandidateCo
       <div className="bg-white rounded-3xl w-full max-w-6xl max-h-[90vh] flex flex-col shadow-2xl">
         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 rounded-t-3xl shrink-0">
           <h2 className="text-xl font-bold text-gray-900">Candidate Comparison</h2>
-          <button onClick={onClose} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
+          <button onClick={onClose} className="p-2 hover:bg-gray-200 rounded-full transition-colors flex items-center justify-center overflow-hidden">
             <X className="w-6 h-6 text-gray-500" />
           </button>
         </div>

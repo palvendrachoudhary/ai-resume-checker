@@ -9,6 +9,7 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState<"landing" | "dashboard">("landing");
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [guestMode, setGuestMode] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -49,15 +50,20 @@ export default function App() {
     return <LandingPage onLaunch={() => setCurrentPage("dashboard")} />;
   }
 
-  if (!user) {
-    return <Login onBack={() => setCurrentPage("landing")} />;
+  if (!user && !guestMode) {
+    return <Login onBack={() => setCurrentPage("landing")} onGuestLogin={() => setGuestMode(true)} />;
   }
 
   return (
     <RecruiterView
       onNavigateHome={() => setCurrentPage("landing")}
+      isGuest={guestMode}
+      onRequireLogin={() => setGuestMode(false)}
       onSignOut={async () => {
-        await signOut(auth);
+        if (!guestMode) {
+          await signOut(auth);
+        }
+        setGuestMode(false);
         setCurrentPage("landing");
       }}
     />

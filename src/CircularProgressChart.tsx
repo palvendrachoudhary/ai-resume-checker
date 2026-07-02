@@ -29,14 +29,14 @@ export default function CircularProgressChart({
 
   return (
     <div className="flex flex-col items-center justify-center relative w-full h-full min-h-[160px]">
-      <ResponsiveContainer width="100%" height={size + 20}>
+      <ResponsiveContainer width="100%" height={160}>
         <PieChart>
           <Pie
             data={data}
             cx="50%"
             cy="50%"
-            innerRadius={size / 2 - strokeWidth}
-            outerRadius={size / 2}
+            innerRadius={55}
+            outerRadius={70}
             startAngle={90}
             endAngle={-270}
             dataKey="value"

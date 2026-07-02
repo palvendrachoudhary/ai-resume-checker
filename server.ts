@@ -3,17 +3,33 @@ import path from "path";
 import multer from "multer";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
-import * as _pdf from "pdf-parse";
+import { PDFParse } from "pdf-parse";
 import crypto from "crypto";
 import Stripe from "stripe";
 import { db } from "./src/db";
 import { interviews, candidateNotes, emailTemplates } from "./src/db/schema";
 import { eq, desc, and } from "drizzle-orm";
 
-const pdf = (_pdf as any).default || _pdf;
 
 // In-memory mock database for the MVP
 const candidates_db = new Map<string, any>();
+
+const withRetry = async <T>(fn: () => Promise<T>, retries = 3, delay = 1000): Promise<T> => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await fn();
+    } catch (e: any) {
+      if (i === retries - 1) throw e;
+      const isRetryable = e?.status === 503 || e?.status === 429 || e?.message?.includes('503') || e?.message?.includes('429');
+      if (isRetryable) {
+        await new Promise((r) => setTimeout(r, delay * Math.pow(2, i)));
+      } else {
+        throw e;
+      }
+    }
+  }
+  throw new Error("Unreachable");
+};
 
 async function startServer() {
   const app = express();
@@ -67,16 +83,25 @@ async function startServer() {
           }
           contents.push(prompt);
 
-          const response = await ai.models.generateContent({
+          const response = await withRetry(() => ai.models.generateContent({
             model: "gemini-2.5-flash",
             contents: contents,
             config: {
               responseMimeType: "application/json",
               temperature: 0.1,
             },
-          });
+          }));
 
-          const profile = JSON.parse(response.text || "{}");
+          const profile = (() => {
+          let text = response.text || "{}";
+          text = text.replace(/^\s*```json/m, '').replace(/```\s*$/m, '');
+          try {
+            return JSON.parse(text);
+          } catch (e) {
+            console.error("Failed to parse JSON from AI response:", text);
+            return {};
+          }
+        })();
           profile.raw_text = rawText || "Extracted from Image";
           profile.source = source;
           profile.uid = uid;
@@ -97,6 +122,7 @@ async function startServer() {
               .map(([k, v]) => `${k}: ${v}`)
               .join("\n");
             const profile = await processTextToProfile(rawText);
+            profile.original_filename = req.file.originalname;
             const candidateId = crypto.randomUUID();
             candidates_db.set(candidateId, profile);
             profiles.push(profile);
@@ -123,7 +149,8 @@ async function startServer() {
         } else {
           let rawText = "";
           if (req.file.originalname.toLowerCase().endsWith(".pdf")) {
-            const data = await pdf(req.file.buffer);
+            const parser = new PDFParse({ data: new Uint8Array(req.file.buffer) });
+            const data = await parser.getText();
             rawText = data.text;
           } else {
             rawText = req.file.buffer.toString("utf-8");
@@ -132,6 +159,7 @@ async function startServer() {
         }
 
         const candidateId = crypto.randomUUID();
+        profile.original_filename = req.file.originalname;
         candidates_db.set(candidateId, profile);
 
         res.json({
@@ -236,16 +264,25 @@ async function startServer() {
           - rejection_mentor_draft: string (a draft of a highly constructive, mentor-style rejection email including a 'Skill Growth Roadmap' with 2-3 specific learning areas and suggested resources/links, based on the gap between their profile and the JD)
         `;
 
-        const response = await ai.models.generateContent({
-          model: "gemini-2.5-pro",
+        const response = await withRetry(() => ai.models.generateContent({
+          model: "gemini-2.5-flash",
           contents: prompt,
           config: {
             responseMimeType: "application/json",
             temperature: 0.2,
           },
-        });
+        }));
 
-        const evalData = JSON.parse(response.text || "{}");
+        const evalData = (() => {
+          let text = response.text || "{}";
+          text = text.replace(/^\s*```json/m, '').replace(/```\s*$/m, '');
+          try {
+            return JSON.parse(text);
+          } catch (e) {
+            console.error("Failed to parse JSON from AI response:", text);
+            return {};
+          }
+        })();
         scoredResults.push({
           candidate,
           ...evalData,
@@ -256,7 +293,7 @@ async function startServer() {
       const topCandidates = scoredResults.slice(0, 5);
 
       res.json({
-        top_candidates: topCandidates,
+        results: topCandidates,
       });
     } catch (e: any) {
       console.error(e);
@@ -450,16 +487,25 @@ async function startServer() {
         - conclusion: string
       `;
 
-      const response = await ai.models.generateContent({
+      const response = await withRetry(() => ai.models.generateContent({
         model: "gemini-2.5-flash",
         contents: prompt,
         config: {
           responseMimeType: "application/json",
           temperature: 0.1,
         },
-      });
+      }));
 
-      const auditData = JSON.parse(response.text || "{}");
+      const auditData = (() => {
+          let text = response.text || "{}";
+          text = text.replace(/^\s*```json/m, '').replace(/```\s*$/m, '');
+          try {
+            return JSON.parse(text);
+          } catch (e) {
+            console.error("Failed to parse JSON from AI response:", text);
+            return {};
+          }
+        })();
       res.json(auditData);
     } catch (e: any) {
       console.error(e);
@@ -489,7 +535,8 @@ async function startServer() {
       let fileExt = req.file.originalname.split(".").pop()?.toLowerCase();
 
       if (fileExt === "pdf") {
-        const data = await pdf(req.file.buffer);
+        const parser = new PDFParse({ data: new Uint8Array(req.file.buffer) });
+        const data = await parser.getText();
         rawText = data.text;
       } else {
         rawText = req.file.buffer.toString("utf-8");
@@ -582,16 +629,25 @@ async function startServer() {
         Base the checks on standard resume best practices. Be constructive and provide actionable feedback.
       `;
 
-      const response = await ai.models.generateContent({
-        model: "gemini-2.5-pro",
+      const response = await withRetry(() => ai.models.generateContent({
+        model: "gemini-2.5-flash",
         contents: prompt,
         config: {
           responseMimeType: "application/json",
           temperature: 0.2,
         },
-      });
+      }));
 
-      const checkData = JSON.parse(response.text || "{}");
+      const checkData = (() => {
+          let text = response.text || "{}";
+          text = text.replace(/^\s*```json/m, '').replace(/```\s*$/m, '');
+          try {
+            return JSON.parse(text);
+          } catch (e) {
+            console.error("Failed to parse JSON from AI response:", text);
+            return {};
+          }
+        })();
       checkData.raw_text = rawText; // Return raw text for frontend usage
 
       res.json(checkData);
@@ -642,16 +698,25 @@ async function startServer() {
         }
       `;
 
-      const response = await ai.models.generateContent({
+      const response = await withRetry(() => ai.models.generateContent({
         model: "gemini-2.5-flash",
         contents: prompt,
         config: {
           responseMimeType: "application/json",
           temperature: 0.3,
         },
-      });
+      }));
 
-      res.json(JSON.parse(response.text || "{}"));
+      res.json((() => {
+          let text = response.text || "{}";
+          text = text.replace(/^\s*```json/m, '').replace(/```\s*$/m, '');
+          try {
+            return JSON.parse(text);
+          } catch (e) {
+            console.error("Failed to parse JSON from AI response:", text);
+            return {};
+          }
+        })());
     } catch (e: any) {
       console.error(e);
       res.status(500).json({ detail: e.message || "Internal Error" });
@@ -698,19 +763,23 @@ async function startServer() {
         }
       `;
 
-      const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+      const response = await withRetry(() => ai.models.generateContent({
+        model: "gemini-2.5-flash",
         contents: prompt,
         config: {
           responseMimeType: "application/json",
           tools: [{ googleSearch: {} }],
         },
-      });
+      }));
 
       let jsonRes = {};
       if (response.text) {
         try {
-          jsonRes = JSON.parse(response.text.trim());
+          
+          let text = response.text.trim();
+          text = text.replace(/^\s*```json/m, '').replace(/```\s*$/m, '');
+          jsonRes = JSON.parse(text);
+
         } catch (e) {
           console.error("Failed to parse JSON response:", response.text);
         }
@@ -759,6 +828,11 @@ async function startServer() {
       console.error(err);
       res.status(err.statusCode || 500).json({ error: err.message });
     }
+  });
+
+  // Fallback for unmatched API routes
+  app.use("/api", (req, res) => {
+    res.status(404).json({ error: "API route not found" });
   });
 
   // Vite middleware for development

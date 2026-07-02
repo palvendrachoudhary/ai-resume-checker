@@ -15,7 +15,10 @@ export default function PrivateNotes({ candidateId }: PrivateNotesProps) {
     if (candidateId) {
       setIsLoading(true);
       fetch(`/api/v1/notes/${candidateId}`)
-        .then(r => r.json())
+        .then(r => {
+          if (!r.ok) throw new Error("Server error");
+          return r.json();
+        })
         .then(data => {
           if (Array.isArray(data)) setNotes(data);
         })
@@ -41,8 +44,8 @@ export default function PrivateNotes({ candidateId }: PrivateNotesProps) {
         })
       });
       
-      const data = await res.json();
       if (res.ok) {
+        const data = await res.json();
         setNotes([data.note, ...notes]);
         setNewNote("");
       }
