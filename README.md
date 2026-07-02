@@ -1,5 +1,5 @@
 # Redrob Hackathon: Team sinner
-**Team Leader**: palvendra | **Team Mate**: antigravity
+**Team Member**: palvendra
 
 This is the official submission for the Intelligent Candidate Discovery & Ranking Challenge.
 
