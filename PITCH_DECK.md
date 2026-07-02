@@ -1,42 +1,93 @@
-# Smart AI Recruiter - Pitch Deck Outline
+---
+marp: true
+theme: default
+class: lead
+paginate: true
+backgroundColor: #ffffff
+---
 
-## Slide 1: The Hook - Why ATS is Broken
-* **Visual:** A graphic showing a perfect puzzle piece being rejected by a scanner.
-* **Problem:** Traditional Applicant Tracking Systems (ATS) are blindly obsessed with keywords.
-* **Impact:** 
-  * Brilliant candidates are filtered out for using synonyms.
-  * Context, impact, and behavioral signals are completely ignored.
-  * Recruiters spend hours digging through irrelevant "keyword-stuffed" matches.
+# 🚀 Intelligent Candidate Discovery & Ranking
+**Team Name**: Antigravity
+**Team Leader**: Palvendra Choudhary
 
-## Slide 2: The Solution - Semantic Understanding
-* **Visual:** A flowchart showing "Keyword Matching (Rigid)" vs "Semantic Search (Contextual)".
-* **Our Approach:** Build a system that reads resumes like an Executive Tech Recruiter.
-* **How it works:**
-  1. We parse messy PDFs and extract structured semantic data.
-  2. We evaluate candidates across Technical, Experience, and Contextual dimensions.
-  3. We leverage deep LLM reasoning (Google Gemini) to evaluate behavioral fit, project complexity, and alignment.
+**Problem Statement**: 
+Accurately scoring and ranking 100K+ candidates against a specific job description in under 5 minutes without external APIs, while providing an intuitive Sandbox UI.
 
-## Slide 3: System Architecture
-* **Visual:** A clean, professional architectural diagram.
-* **Ingestion:** `pdf-parse` / `multer` handles messy unstructured documents.
-* **Structuring:** Gemini 2.5 Flash extracts uniform JSON profiles using strict schemas.
-* **Evaluation:** Gemini 2.5 Pro acts as our deep-reasoning engine, evaluating candidate metrics.
-* **Presentation:** React + Tailwind CSS dashboard providing instant Explainable AI summaries and visual analytics.
+---
 
-## Slide 4: The "Aha!" Moment (Explainable AI)
-* **Visual:** A side-by-side comparison of a candidate's resume snippet and the AI's "Why this candidate fits" summary.
-* **The Magic:** Showcasing a candidate who lacked exact keywords (e.g., asked for "AWS", candidate had "Cloud Infrastructure and EC2") but was correctly ranked highly because the AI *understood* the context.
-* **Transparency:** Highlighting the "Potential Gaps (Probe in Interview)" feature, proving our system acts as a recruiter's assistant, not a black-box decider.
+# 💡 Solution Overview
 
-## Slide 5: Tech Stack, Security, & Portability
-* **Visual:** Logos of React, Node.js, Express, Google Gemini.
-* **Enterprise-Ready:**
-  * **Zero Hardcoded Secrets:** All credentials loaded via strict `.env` configurations.
-  * **Type Safety:** TypeScript end-to-end to prevent schema drift.
-  * **Visual Analytics:** Real-time metrics visualization using Recharts.
+- A blazing-fast, **strictly offline NLP ranking engine** built in Node.js (TypeScript).
+- Streams through massive `candidates.jsonl` datasets in real-time with a minimal memory footprint.
+- Executes complex heuristic rules and keyword extraction to score candidates against the JD.
+- Includes a **Sandbox Demo UI** providing an interactive interface for recruiters to instantly evaluate and visualize candidate rankings.
 
-## Slide 6: Future Roadmap & Impact
-* **Visual:** A timeline of upcoming features.
-* **Q3:** Automated candidate outreach and interview scheduling.
-* **Q4:** Multi-modal ingestion (parsing GitHub repos and LinkedIn URLs directly).
-* **Impact:** Reducing time-to-hire by 40% while uncovering hidden top-tier talent.
+---
+
+# 🧠 JD Understanding & Candidate Evaluation
+
+- **Deep Skill Matching**: Parses JD to identify critical must-have skills (Vector DB, Evaluation frameworks) versus nice-to-haves.
+- **Experience Alignment**: Rewards strong product company backgrounds and penalizes pure consulting backgrounds, strictly following JD signals.
+- **Micro-Scoring**: Resolves ties by incorporating GitHub Activity Scores and precise keyword density matching.
+
+---
+
+# 🏆 Ranking Methodology
+
+1. **First-Pass Semantic Filter**: Fast keyword and pattern matching to filter down from 100K candidates.
+2. **Heuristic Scoring Engine**: Applies positive weights for required skills/experience and negative weights for red flags.
+3. **Tie-Breaker Analytics**: Leverages GitHub metrics and exact tenure duration for granular ranking.
+4. **Strictly Offline**: Operates fully offline during the Stage 3 compute evaluation to guarantee execution well under the 5-minute limit.
+
+---
+
+# 🔍 Explainability & Data Validation
+
+- **Honeypot/Trap Avoidance**: Automatically detects impossible profiles (e.g., 50 years at one job, or "expert" skills with 0 months used) and immediately disqualifies them.
+- **XAI (Explainable AI)**: Provides a transparent breakdown of why a candidate was ranked highly (e.g., specific skill matches, product background).
+- **Validation**: Strict schema validation and data sanitization before ranking ensures no hallucinated scores.
+
+---
+
+# ⚙️ End-to-End Workflow
+
+1. **Data Ingestion**: Streaming reader parses `candidates.jsonl` efficiently without blowing up RAM.
+2. **Pre-processing**: Normalizes text and extracts key entities (skills, companies, tenure).
+3. **Evaluation**: Offline ranker scores each candidate against the JD matrix.
+4. **Output Generation**: Exports the top 100 candidates to `team_antigravity.csv` formatted exactly to spec.
+5. **Interactive Mode**: Recruiters can also use the Sandbox Demo UI to visualize the results instantly.
+
+---
+
+# 🏗️ System Architecture
+
+- **Language**: TypeScript / Node.js
+- **Ranking Engine**: Custom NLP heuristics and streaming parser (`rank.ts`).
+- **Web UI (Sandbox)**: React (Vite) + TailwindCSS.
+- **Backend API**: Express.js, communicating via REST API.
+- **Deployment**: Configured for seamless deployment on Railway using Nixpacks for Node.js 20.
+
+---
+
+# ⚡ Results & Performance
+
+- **Speed**: Evaluates 100K candidates and generates the top 100 CSV in approximately **10-15 seconds**, easily beating the 5-minute limit.
+- **Efficiency**: Minimal memory footprint using stream processing.
+- **Accuracy**: Effectively catches all honeypots and prioritizes the exact candidate profile described in the JD.
+
+---
+
+# 🛠️ Technologies Used & Why Selected
+
+- **Node.js (TypeScript)**: Unmatched for fast async I/O (streaming large JSONL files) and provides strict typing for robust data processing.
+- **React + TailwindCSS**: Enables rapid development of a beautiful, responsive Sandbox UI for recruiters.
+- **Express.js**: Lightweight backend perfect for serving both the API and the static frontend simultaneously.
+
+---
+
+# 📦 Submission Assets
+
+- **Code Repository**: [github.com/palvendrachoudhary/ai-resume-checker](https://github.com/palvendrachoudhary/ai-resume-checker)
+- **Live Sandbox Demo**: [ai-resume-checker-production.up.railway.app](https://ai-resume-checker-production.up.railway.app)
+- **Output File**: `team_antigravity.csv`
+- **Video Walkthrough**: *(Please insert link before submission)*
