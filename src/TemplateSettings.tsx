@@ -184,7 +184,7 @@ export default function TemplateSettings({ onClose }: TemplateSettingsProps) {
               </div>
               
               <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-100">
-                <span className="text-sm font-medium text-green-600">
+                <span className={`text-sm font-medium ${saveMessage.includes('Error') ? 'text-red-600' : 'text-green-600'}`}>
                   {saveMessage}
                 </span>
                 <button 

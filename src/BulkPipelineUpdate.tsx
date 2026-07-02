@@ -1,11 +1,9 @@
 import React from "react";
 import {
-  Play,
-  UserCheck,
   PhoneCall,
   Gift,
   XCircle,
-  CheckCircle2,
+  UserCheck,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 

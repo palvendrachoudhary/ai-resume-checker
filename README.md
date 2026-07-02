@@ -1,74 +1,42 @@
-# Smart Recruiter: Contextual AI Talent Engine
+# Redrob Hackathon: Team Antigravity
 
-A next-generation Talent Intelligence Platform that moves beyond rigid ATS keyword matching. Powered by Google AI Studio (Gemini 2.0) and advanced semantic reasoning, it evaluates candidates based on context, complexity, and true potential.
+This is the official submission for the Intelligent Candidate Discovery & Ranking Challenge.
 
-## Core Features
+## Architecture
 
-- **Semantic Intelligence**: Uses deep reasoning to understand project complexity, not just keyword presence.
-- **Blind Hiring Mode**: Eradicates unconscious bias by masking PII (names, emails, gender indicators).
-- **Dynamic Skill Weighting**: Adjust the importance of Technical Rigor, Leadership, Domain Familiarity, and Soft Skills on the fly.
-- **Explainable AI (XAI)**: Provides clear arguments for "Why they excel" and "Identified Gaps".
-- **AI Interview Blueprint**: Generates custom interview questions based on each candidate's specific profile gaps.
-- **Automated Outreach**: Drafts highly personalized outreach emails referencing candidate projects and JD alignment.
-- **Hidden Gem Finder**: Cross-matches candidates against adjacent roles to find talent that might otherwise be discarded.
+Our submission utilizes a blazing-fast, strictly offline NLP ranking engine built in Node.js (TypeScript). 
+It streams through `candidates.jsonl`, executing heuristic rules and keyword extraction to score candidates against the provided `job_description.docx` without relying on any external APIs during the evaluation phase, perfectly complying with Stage 3 constraints (no network, 5-minute compute).
 
-## Architecture & Lifecycle Flow
+### Key Features
+1. **Honeypot/Trap Avoidance**: Automatically detects impossible profiles (e.g. 50 years at one job, or "expert" skills with 0 months used) and filters them.
+2. **Strict JD Compliance**: Penalizes pure consulting backgrounds (per the JD's explicitly stated negative signals) and rewards strong product company backgrounds with Vector DB / Evaluation framework experience.
+3. **Micro-Scoring**: Resolves ties by incorporating Github Activity Scores and exact keyword densities.
 
-```mermaid
-stateDiagram-v2
-    [*] --> Upload
-    Upload --> StructuredIngestion: JD & Resumes (PDF/DOCX)
-    
-    state StructuredIngestion {
-        Parsing: Text Extraction
-        Structuring: Gemini JSON Transformation
-    }
-    
-    StructuredIngestion --> DenseVectorPreFilter: MongoDB + ChromaDB
-    
-    DenseVectorPreFilter --> GeminiReRanking: Top N Candidates
-    
-    state GeminiReRanking {
-        DeepReasoning: Contextual Fit Analysis
-        GapIdentification: Risk & Potential Eval
-        ComplexityScoring: Portfolio Intensity
-    }
-    
-    GeminiReRanking --> DashboardUI: Final Shortlist
-    
-    state DashboardUI {
-        RadarAnalytics: Visual Fit Matrix
-        BlindHiringToggle: PII Masking
-        WhatIfSim: Candidate Simulations
-    }
-    
-    DashboardUI --> ActionableOutreach
-    ActionableOutreach --> [*]
+## Reproducing the Submission CSV
+
+To generate the exact `team_antigravity.csv` from the 100K candidate pool within the compute limits:
+
+### Setup Requirements
+- Node.js (v18+ recommended)
+- `candidates.jsonl` file placed at `hackathon_materials/[PUB] India_runs_data_and_ai_challenge/India_runs_data_and_ai_challenge/candidates.jsonl` (or modify the path in `rank.ts`)
+
+### Exact Command
+```bash
+# Install dependencies
+npm install
+
+# Run the ranking script
+npx tsx rank.ts
 ```
+The script will output `team_antigravity.csv` containing the top 100 candidates formatted exactly to spec in around ~10-15 seconds.
 
-## Running the Project
+## Sandbox Demo UI
 
-This is a modern React SPA using Vite, Tailwind CSS, and Recharts.
+We have provided a React/Express web application that acts as our Sandbox Demo. 
+It uses the exact same fast, offline ranking logic under the hood to instantly evaluate a smaller sample of candidates.
 
-1. `npm install`
-2. `npm run dev`
-
----
-
-## LinkedIn Launch Post Draft
-
-🚀 **Excited to unveil my submission for the India runs on Data & AI Challenge!** 🇮🇳
-
-We all know the pain of traditional ATS systems: rigid keyword filters, high false negatives, and systemic bias. That’s why I built a **Contextual AI Talent Engine** powered by Gemini 2.0.
-
-Instead of parsing for exact keywords, this engine actually *understands* the complexity of a candidate's projects, their leadership trajectory, and their true potential fit for a role. 
-
-✨ **Key Features:**
-- **Blind Hiring Mode** to eradicate unconscious bias.
-- **Explainable AI** that tells you *why* a candidate fits and what their gaps are.
-- **Dynamic Skill Weighting** to prioritize what matters most to your team today.
-- **Automated Interview Blueprints** tailored to the candidate’s specific risks.
-
-The future of hiring is context, not regex. Check out the demo and let me know your thoughts! 👇
-
-#GoogleAI #Gemini #FutureOfWork #AI #TalentAcquisition #DataAndAIChallenge
+```bash
+# Start the Sandbox UI
+npm run dev
+```
+Then navigate to `http://localhost:3000`. You can upload the `sample_candidates.json` file provided in the hackathon bundle, and watch the offline ranker evaluate them instantly!

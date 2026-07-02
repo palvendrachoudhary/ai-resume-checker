@@ -5,21 +5,17 @@ import {
   Brain,
   Globe2,
   Zap,
-  Hammer,
-  EyeOff,
-  LineChart,
   Play,
   ArrowRight,
   Github,
-  ShieldCheck,
-  Workflow,
   FileSearch,
   Wand2,
   History,
-  Radar,
   Moon,
   Columns,
   CheckCircle2,
+  EyeOff,
+  LineChart,
 } from "lucide-react";
 
 interface LandingPageProps {

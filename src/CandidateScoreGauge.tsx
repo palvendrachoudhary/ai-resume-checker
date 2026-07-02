@@ -10,7 +10,7 @@ export default function CandidateScoreGauge({ score, id, compact = false }: Cand
   if (compact) {
     return (
       <div className="relative w-16 h-8 mx-auto overflow-hidden flex-shrink-0">
-        <svg className="w-full h-full" viewBox="0 0 100 55">
+        <svg className="w-full h-full" viewBox="0 0 100 60">
           <defs>
             <linearGradient id={`score-gradient-compact-${id}`} x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#ef4444" />
@@ -58,7 +58,7 @@ export default function CandidateScoreGauge({ score, id, compact = false }: Cand
     <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center justify-center">
       <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">Overall Match Score</h4>
       <div className="relative w-64 h-32 mx-auto overflow-hidden">
-        <svg className="w-full h-full" viewBox="0 0 100 55">
+        <svg className="w-full h-full" viewBox="0 0 100 60">
           <defs>
             <linearGradient id={`score-gradient-${id}`} x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#ef4444" /> {/* Red */}

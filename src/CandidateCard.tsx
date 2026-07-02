@@ -24,7 +24,6 @@ import RankingAudit from "./RankingAudit";
 import CareerPathVisualizer from "./CareerPathVisualizer";
 
 interface CandidateCardProps {
-  key?: any;
   res: any;
   index: number;
   isSelected: boolean;
@@ -36,6 +35,7 @@ interface CandidateCardProps {
   versions?: any[];
   activeVersionIndex?: number;
   onVersionSelect?: (index: number) => void;
+  key?: React.Key;
 }
 
 export default function CandidateCard({
@@ -294,6 +294,34 @@ export default function CandidateCard({
                 </div>
               )}
 
+              {res.signal_audit && res.signal_audit.length > 0 && (
+                <div className="bg-slate-900 p-4 rounded-xl shadow-sm mt-4 text-slate-100">
+                  <h4 className="font-bold text-slate-100 mb-3 uppercase tracking-wider text-xs flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-green-400" />
+                    Offline XAI Signal Audit
+                  </h4>
+                  <div className="grid md:grid-cols-2 gap-3">
+                    {res.signal_audit.map((signal: any, idx: number) => (
+                      <div key={idx} className={`p-3 rounded-lg border ${signal.type === 'bonus' ? 'bg-green-900/30 border-green-800' : 'bg-red-900/30 border-red-800'}`}>
+                        <div className="flex items-center gap-2 mb-1">
+                          {signal.type === 'bonus' ? (
+                            <ThumbsUp className="w-3 h-3 text-green-400" />
+                          ) : (
+                            <ThumbsDown className="w-3 h-3 text-red-400" />
+                          )}
+                          <span className={`text-xs font-bold ${signal.type === 'bonus' ? 'text-green-400' : 'text-red-400'}`}>
+                            {signal.label}
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-slate-400 leading-relaxed">
+                          {signal.reason}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="grid md:grid-cols-2 gap-4 mt-4">
                 <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                   <h4 className="font-bold text-gray-800 mb-2 uppercase tracking-wider text-xs">
@@ -336,7 +364,11 @@ export default function CandidateCard({
 
               <CompensationInsights
                 expectedSalary={
-                  res.candidate?.expected_salary || 110000 + index * 15000
+                  res.candidate?.expected_salary 
+                    ? (typeof res.candidate.expected_salary === 'string' 
+                        ? parseInt(res.candidate.expected_salary.replace(/[^0-9]/g, '')) 
+                        : res.candidate.expected_salary)
+                    : 110000 + index * 15000
                 }
                 role="Software Engineer"
               />

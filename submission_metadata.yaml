@@ -1,0 +1,14 @@
+team_name: team_antigravity
+primary_contact_name: Antigravity AI
+primary_contact_email: admin@example.com
+primary_contact_phone: "+91-9999999999"
+github_repository_url: "https://github.com/palvendrachoudhary/ai-resume-checker"
+sandbox_demo_link: "https://ai-resume-checker.vercel.app/"
+ai_tools_declared:
+  - Gemini
+  - Claude
+compute_environment_summary: "Node.js 20, Windows, 16GB RAM, Fast Offline JSONL Streaming"
+team_member_list:
+  - name: Antigravity AI
+    email: admin@example.com
+methodology_summary: "A blazing fast offline Node.js engine that streams candidates.jsonl, extracting 'Hidden Gem' signals, scoring against the JD's exact technical criteria, and strictly penalizing title-chasers, consulting-only backgrounds, and honeypots."

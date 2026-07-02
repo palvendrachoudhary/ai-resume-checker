@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
-    "start": "node dist/server.cjs",
+    "build": "vite build && esbuild server.ts --bundle --platform=node --format=esm --packages=external --sourcemap --outfile=dist/server.mjs",
+    "start": "node dist/server.mjs",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit"
@@ -49,6 +49,7 @@
     "@types/pg": "^8.20.0",
     "autoprefixer": "^10.4.21",
     "esbuild": "^0.25.0",
+    "mammoth": "^1.12.0",
     "tailwindcss": "^4.1.14",
     "tsx": "^4.22.4",
     "typescript": "~5.8.2",

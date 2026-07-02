@@ -10,6 +10,7 @@ export default function PrivateNotes({ candidateId }: PrivateNotesProps) {
   const [newNote, setNewNote] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
     if (candidateId) {
@@ -31,6 +32,7 @@ export default function PrivateNotes({ candidateId }: PrivateNotesProps) {
     if (!newNote.trim()) return;
     
     setIsSaving(true);
+    setErrorMsg("");
     
     try {
       const res = await fetch("/api/v1/notes", {
@@ -48,9 +50,12 @@ export default function PrivateNotes({ candidateId }: PrivateNotesProps) {
         const data = await res.json();
         setNotes([data.note, ...notes]);
         setNewNote("");
+      } else {
+        setErrorMsg("Failed to save note. Server error.");
       }
     } catch (error) {
       console.error(error);
+      setErrorMsg("Failed to save note.");
     } finally {
       setIsSaving(false);
     }
@@ -71,7 +76,8 @@ export default function PrivateNotes({ candidateId }: PrivateNotesProps) {
             placeholder="Add a private note about this candidate..."
             className="w-full min-h-[100px] p-3 text-sm text-gray-800 bg-white border border-amber-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 resize-y"
           />
-          <div className="flex justify-end mt-2">
+          <div className="flex justify-between items-center mt-2">
+            <span className="text-xs font-bold text-red-600">{errorMsg}</span>
             <button
               onClick={handleSaveNote}
               disabled={!newNote.trim() || isSaving}

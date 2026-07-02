@@ -83,6 +83,44 @@ export default function RecruiterView({
   );
   const [jobInsights, setJobInsights] = useState<any>(null);
   const [isFetchingInsights, setIsFetchingInsights] = useState(false);
+  
+  // Challenge Mode State
+  const [isChallengeRunning, setIsChallengeRunning] = useState(false);
+  const [challengeProgress, setChallengeProgress] = useState("");
+  const [challengeCsv, setChallengeCsv] = useState<string | null>(null);
+
+  const runChallengeMode = () => {
+    setIsChallengeRunning(true);
+    setChallengeProgress("Starting offline 100k evaluation...");
+    setChallengeCsv(null);
+
+    const es = new EventSource("/api/v1/jobs/challenge-mode");
+    
+    es.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === "progress") {
+          setChallengeProgress(data.message);
+        } else if (data.type === "success") {
+          setChallengeCsv(data.csv);
+          setChallengeProgress("Evaluation complete! 100,000 candidates processed.");
+          setIsChallengeRunning(false);
+          es.close();
+        } else if (data.type === "error") {
+          setChallengeProgress("Error: " + data.message);
+          setIsChallengeRunning(false);
+          es.close();
+        }
+      } catch (e) {
+        console.error("SSE parsing error", e);
+      }
+    };
+    es.onerror = () => {
+      setChallengeProgress("Connection to challenge engine lost.");
+      setIsChallengeRunning(false);
+      es.close();
+    };
+  };
 
   React.useEffect(() => {
     // Check initial preference
@@ -196,11 +234,11 @@ export default function RecruiterView({
       const res = await fetch("/api/v1/payment/create-checkout-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          priceId: "price_1QxYz2ABCDEF",
-          successUrl: window.location.origin + "?success=true",
-          cancelUrl: window.location.origin + "?canceled=true",
-        })
+        body: JSON.stringify({ 
+          priceId: import.meta.env.VITE_STRIPE_PRICE_ID,
+          successUrl: `${window.location.origin}/?success=true`,
+          cancelUrl: `${window.location.origin}/?canceled=true`
+        }),
       });
       if (!res.ok) {
         throw new Error("Server error");
@@ -626,12 +664,9 @@ export default function RecruiterView({
         ]);
         setIsEvaluating(false);
       }, 1500);
-      return; // return early to prevent the finally block from clearing state if async
-    } finally {
-      if (!isEvaluating) {
-        setIsEvaluating(false);
-      }
+      return; // return early to prevent clearing state if async
     }
+    setIsEvaluating(false);
   };
 
   const fetchJobInsights = async () => {
@@ -818,7 +853,7 @@ export default function RecruiterView({
               <button
                 onClick={handleCheckout}
                 disabled={isCheckoutLoading}
-                className="hidden md:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-sm font-medium rounded-lg shadow-sm transition-all disabled:opacity-50 flex justify-center overflow-hidden"
+                className="hidden md:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-sm font-medium rounded-lg shadow-sm transition-all disabled:opacity-50 justify-center overflow-hidden"
               >
                 {isCheckoutLoading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -1124,6 +1159,57 @@ export default function RecruiterView({
                   </>
                 )}
               </button>
+
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <button
+                  onClick={runChallengeMode}
+                  disabled={isChallengeRunning}
+                  className="w-full py-3 bg-red-600 text-white rounded-xl font-black hover:bg-red-700 transition-colors shadow-lg flex items-center justify-center gap-2 relative overflow-hidden group"
+                >
+                  <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20 mix-blend-overlay"></div>
+                  {isChallengeRunning ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin relative z-10" /> 
+                      <span className="relative z-10">Processing 100k...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="w-5 h-5 relative z-10 group-hover:scale-125 transition-transform" /> 
+                      <span className="relative z-10">100k Challenge Mode</span>
+                    </>
+                  )}
+                </button>
+
+                {isChallengeRunning && (
+                  <div className="mt-3 p-3 bg-gray-900 rounded-lg border border-gray-800 shadow-inner">
+                    <p className="font-mono text-[10px] text-green-400 leading-tight">
+                      {challengeProgress || "Initializing streams..."}
+                    </p>
+                  </div>
+                )}
+                
+                {challengeCsv && !isChallengeRunning && (
+                  <div className="mt-3 p-3 bg-green-50 rounded-lg border border-green-200 shadow-sm text-center">
+                    <p className="text-xs text-green-800 font-bold mb-2">{challengeProgress}</p>
+                    <button 
+                      onClick={() => {
+                        const blob = new Blob([challengeCsv], { type: "text/csv;charset=utf-8;" });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = "team_antigravity.csv";
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                      }}
+                      className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors w-full flex items-center justify-center gap-2"
+                    >
+                      <Download className="w-4 h-4" /> Download team_antigravity.csv
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="mt-4 bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-xl border border-purple-100 flex items-center justify-between">

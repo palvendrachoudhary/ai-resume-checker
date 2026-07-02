@@ -21,7 +21,7 @@ export default function CandidateComparison({ candidates, onClose }: CandidateCo
         </div>
         
         <div className="p-6 overflow-y-auto flex-grow">
-           <div className={`grid grid-cols-1 md:grid-cols-${Math.min(candidates.length, 3)} gap-6`}>
+           <div className={`grid grid-cols-1 ${candidates.length === 1 ? 'md:grid-cols-1' : candidates.length === 2 ? 'md:grid-cols-2' : 'md:grid-cols-3'} gap-6`}>
              {candidates.map((res, i) => (
                <div key={i} className="border border-gray-100 rounded-2xl p-5 shadow-sm bg-white flex flex-col">
                  <h3 className="font-bold text-lg text-gray-900 mb-1 truncate" title={res.candidate.name}>{res.candidate.name || "Unknown"}</h3>

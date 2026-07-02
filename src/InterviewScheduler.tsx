@@ -51,9 +51,12 @@ export default function InterviewScheduler({ candidateId }: InterviewSchedulerPr
         setInterviews([...interviews, data.interview]);
         setDate("");
         setTime("");
+      } else {
+        setSuccessMsg("Error: Server responded with an error.");
       }
     } catch (error) {
       console.error(error);
+      setSuccessMsg("Error scheduling interview.");
     } finally {
       setIsScheduling(false);
     }
@@ -109,7 +112,7 @@ export default function InterviewScheduler({ candidateId }: InterviewSchedulerPr
         </button>
         
         {successMsg && (
-          <div className="text-xs text-green-600 font-bold text-center mt-2">
+          <div className={`text-xs font-bold text-center mt-2 ${successMsg.startsWith('Error') ? 'text-red-600' : 'text-green-600'}`}>
             {successMsg}
           </div>
         )}

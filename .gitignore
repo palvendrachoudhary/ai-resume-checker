@@ -37,3 +37,8 @@ firebase-applet-config.json
 
 # Docker
 .docker/
+hackathon_materials/
+*.zip
+*.pdf
+team_antigravity.csv
+test_extract*
