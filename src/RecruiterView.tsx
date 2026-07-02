@@ -42,6 +42,7 @@ import ProfileSettings from "./ProfileSettings";
 
 import { auth, db } from "./firebase";
 import { collection, query, getDocs, setDoc, doc, deleteDoc, orderBy, limit } from "firebase/firestore";
+import * as XLSX from "xlsx";
 
 interface RecruiterViewProps {
   onNavigateHome?: () => void;
@@ -480,6 +481,33 @@ export default function RecruiterView({
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  };
+
+  const handleDownloadXlsx = () => {
+    if (filteredResults.length === 0) return;
+
+    const sortedToExport = [...filteredResults].sort(
+      (a, b) => b.match_score - a.match_score,
+    );
+
+    const data = sortedToExport.map((r) => ({
+      "Name": r.candidate?.name || "Unknown",
+      "Source": r.candidate?.source || "Unknown",
+      "Overall Match Score": r.match_score,
+      "Technical Fit": r.technical_fit_score,
+      "Experience Fit": r.experience_fit_score,
+      "Velocity Score": r.velocity_score,
+      "Contextual Fit": r.contextual_fit_score,
+      "Portfolio Intensity": r.portfolio_intensity,
+      "Hidden Gem": r.hidden_gem || "No",
+      "Why This Candidate": r.why_this_candidate || "",
+      "Potential Gaps": r.potential_gaps || "",
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Shortlist");
+    XLSX.writeFile(workbook, "ranked_candidates_shortlist.xlsx");
   };
 
   const checkGuestLimit = () => {
@@ -1392,9 +1420,18 @@ export default function RecruiterView({
                   <button
                     onClick={handleDownload}
                     className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors rounded-lg text-sm font-bold print:hidden"
+                    title="Download Shortlist (CSV)"
                   >
                     <Download className="w-4 h-4" />
-                    Download Shortlist (CSV)
+                    CSV
+                  </button>
+                  <button
+                    onClick={handleDownloadXlsx}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors rounded-lg text-sm font-bold print:hidden"
+                    title="Download Shortlist (XLSX)"
+                  >
+                    <Download className="w-4 h-4" />
+                    XLSX
                   </button>
                 </div>
               )}
