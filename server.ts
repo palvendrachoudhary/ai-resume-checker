@@ -5,7 +5,7 @@ import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
-const pdfParse = require("pdf-parse");
+const { PDFParse } = require("pdf-parse");
 import crypto from "crypto";
 import { spawn } from "child_process";
 import fs from "fs";
@@ -161,7 +161,8 @@ async function startServer() {
         } else {
           let rawText = "";
           if (req.file.originalname.toLowerCase().endsWith(".pdf")) {
-            const data = await pdfParse(req.file.buffer);
+            const parser = new PDFParse({ data: new Uint8Array(req.file.buffer) });
+            const data = await parser.getText();
             rawText = data.text;
           } else {
             rawText = req.file.buffer.toString("utf-8");
@@ -577,7 +578,8 @@ async function startServer() {
       let fileExt = req.file.originalname.split(".").pop()?.toLowerCase();
 
       if (fileExt === "pdf") {
-        const data = await pdfParse(req.file.buffer);
+        const parser = new PDFParse({ data: new Uint8Array(req.file.buffer) });
+        const data = await parser.getText();
         rawText = data.text;
       } else {
         rawText = req.file.buffer.toString("utf-8");
@@ -883,6 +885,18 @@ async function startServer() {
       appType: "spa",
     });
     app.use(vite.middlewares);
+
+    app.use("*", async (req, res, next) => {
+      try {
+        const url = req.originalUrl;
+        let template = fs.readFileSync(path.resolve(process.cwd(), "index.html"), "utf-8");
+        template = await vite.transformIndexHtml(url, template);
+        res.status(200).set({ "Content-Type": "text/html" }).end(template);
+      } catch (e: any) {
+        vite.ssrFixStacktrace(e);
+        next(e);
+      }
+    });
   } else {
     const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));

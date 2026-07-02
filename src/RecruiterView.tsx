@@ -27,7 +27,8 @@ import {
   LayoutList,
   Columns,
   Download,
-  Loader2
+  Loader2,
+  Zap
 } from "lucide-react";
 import RecruitmentMetrics from "./RecruitmentMetrics";
 import AIBiasDetector from "./AIBiasDetector";
